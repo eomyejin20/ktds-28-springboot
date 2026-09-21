@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: hello-boot
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+logging:
+  level:
+    root: debug

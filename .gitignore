@@ -1,0 +1,10 @@
+# git으로 업로드 하기 싫은 항목을 작성
+
+
+.metadata
+
+*/.settings
+*/bin
+
+.classpath
+.project
