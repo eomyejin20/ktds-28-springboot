@@ -1,3 +1,4 @@
+
 package com.ktdsuniversity.edu.articles.vo.response;
 
 public class ArticlesVO {
@@ -14,21 +15,20 @@ public class ArticlesVO {
 	private String fileSetId;
 	
 	
-	
-	public ArticlesVO(String id, String subject, String content, String email, String viewCnt, String recommendCnt,
-			String delYn, String crtDt, String mdfyDt, String fileSetId) {
-		super();
-		this.id = id;
-		this.subject = subject;
-		this.content = content;
-		this.email = email;
-		this.viewCnt = viewCnt;
-		this.recommendCnt = recommendCnt;
-		this.delYn = delYn;
-		this.crtDt = crtDt;
-		this.mdfyDt = mdfyDt;
-		this.fileSetId = fileSetId;
-	}
+//	public ArticlesVO(String id, String subject, String content, String email, String viewCnt, String recommendCnt,
+//			String delYn, String crtDt, String mdfyDt, String fileSetId) {
+//		super();
+//		this.id = id;
+//		this.subject = subject;
+//		this.content = content;
+//		this.email = email;
+//		this.viewCnt = viewCnt;
+//		this.recommendCnt = recommendCnt;
+//		this.delYn = delYn;
+//		this.crtDt = crtDt;
+//		this.mdfyDt = mdfyDt;
+//		this.fileSetId = fileSetId;
+//	}
 
 
 
