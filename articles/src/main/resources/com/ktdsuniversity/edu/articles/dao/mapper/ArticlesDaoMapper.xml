@@ -85,19 +85,30 @@
 
 	<update id="updateArticleId">
 		UPDATE ARTICLES
-		SET SUBJECT =#{modifyArticleVO.subject}
-		, CONTENT =#{modifyArticleVO.content}
-		, MDFY_DT = SYSDATE
-		WHERE ID = #{articleId}
-		AND EMAIL = #{modifyArticleVO.email}
-		AND DEL_YN = 'N'
+		   SET SUBJECT =#{modifyArticleVO.subject}
+		     , CONTENT =#{modifyArticleVO.content}
+		     , MDFY_DT = SYSDATE
+		 WHERE ID = #{articleId}
+		   AND EMAIL = #{modifyArticleVO.email}
+		   AND DEL_YN = 'N'
 	</update>
-
 	<update id="deleteArticle" parameterType="string">
 		UPDATE ARTICLES
-		SET DEL_YN = 'Y'
-		, MDFY_DT = SYSDATE
-		WHERE ID = #{_parameter}
-		AND DEL_YN = 'N'
+		   SET DEL_YN = 'Y'
+		     , MDFY_DT = SYSDATE
+		 WHERE ID = #{_parameter}
+		   AND DEL_YN = 'N'
 	</update>
+	<update id="updateIncreaseViewCount" parameterType="string">
+	   UPDATE ARTICLES
+          SET VIEW_CNT = VIEW_CNT + 1
+        WHERE ID = #{_parameter}
+          AND DEL_YN = 'N'
+	</update>
+	<update id="updateIncreaseRecommendCount" parameterType="string">
+       UPDATE ARTICLES
+          SET RECOMMEND_CNT = RECOMMEND_CNT + 1
+        WHERE ID = #{_parameter}
+          AND DEL_YN = 'N'
+    </update>
 </mapper>

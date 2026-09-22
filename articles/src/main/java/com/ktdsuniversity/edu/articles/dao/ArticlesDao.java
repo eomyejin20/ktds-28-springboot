@@ -43,10 +43,18 @@ public interface ArticlesDao {
 	 */
 	ArticlesVO selectArticleByArticleId(String articleId);
 
+	
 	int updateArticleId(@Param("articleId") String articleId, @Param("modifyArticleVO") ModifyArticleVO modifyArticleVO);
 	
 	//게시글 삭제
 	int deleteArticle(String articleId);
+	
+	
+	//게시글 1개 조회수
+	int updateIncreaseViewCount(String articleId);
+
+	//게시글 추천수 증가
+	int updateIncreaseRecommendCount(String articleId);
 }
 
 

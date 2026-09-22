@@ -33,4 +33,19 @@ public interface ArticlesService {
 	 * @return 삭제한 게시글 아이디
 	 */
 	String deleteArticle(String articleId);
+
+	
+	/**
+	 * 게시글 1개 조회
+	 * @param articleId
+	 * @return 조회한 게시글 1개 (조회수 증가된)
+	 */
+	ArticlesVO readOneArticle(String articleId);
+
+	/**
+	 * 추천수 1 증가
+	 * @param articleId
+	 * @return
+	 */
+	long recommendOneArticle(String articleId);
 }

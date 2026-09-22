@@ -14,6 +14,7 @@ import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
 import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
+import com.ktdsuniversity.edu.commons.util.ApiResponse;
 
 import lombok.AllArgsConstructor;
 
@@ -47,22 +48,26 @@ public class ArticlesController {
 	@GetMapping("/articles")
 	//컨트롤러가 반환시키는 "객체"를 "JSON"으로 변환시키는 View를 사용해라!
 	@ResponseBody
-	public ArticleListVO getArticles() {
+	public ApiResponse<ArticleListVO> getArticles() {
 //		System.out.println(this.articlesService);
-		return this.articlesService.readAllArticles();
+		ArticleListVO result = this.articlesService.readAllArticles();
+		
+		return ApiResponse.OK(result);
 	}
 	
 	@PostMapping("/articles")
 	@ResponseBody
-	public ArticlesVO makeNewArticle(@RequestBody RegistArticleVO registArticleVO) {
-		return this.articlesService.createNewArticle(registArticleVO);
+	public ApiResponse<ArticlesVO> makeNewArticle(@RequestBody RegistArticleVO registArticleVO) {
+		 ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
+		return ApiResponse.CREATED(result);
 	}
 	
 	@PutMapping("/articles/{articleId}")
 	@ResponseBody
-	public ArticlesVO updateArticle(@PathVariable String articleId, 
+	public ApiResponse<ArticlesVO> updateArticle(@PathVariable String articleId, 
 									@RequestBody ModifyArticleVO modifyArticleVO) {
-		return this.articlesService.updateArticle(articleId, modifyArticleVO);
+		ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);
+		return ApiResponse.OK(result);
 	}
 	
 
@@ -73,8 +78,33 @@ public class ArticlesController {
 	 */
 	@DeleteMapping("/articles/{articleId}")
 	@ResponseBody
-	public String deleteArticle(@PathVariable String articleId) {
-		return this.articlesService.deleteArticle(articleId);
+	public ApiResponse<String> deleteArticle(@PathVariable String articleId) {
+		String deleteResult = this.articlesService.deleteArticle(articleId);
+		return ApiResponse.OK(deleteResult);
+	}
+	
+	/**
+	 * 게시글 1개 조회
+	 * @param articleId
+	 * @return
+	 */
+	@GetMapping("/articles/{articleId}")
+	@ResponseBody
+	public ApiResponse<ArticlesVO> getOneArticle(@PathVariable String articleId) {
+		ArticlesVO result = this.articlesService.readOneArticle(articleId);
+		return ApiResponse.OK(result);
+	}
+	
+	/**
+	 * 게시글 추천수 1 증가
+	 * @param articleId
+	 * @return
+	 */
+	@PutMapping("/articles/recommend/{articleId}")
+	@ResponseBody
+	public ApiResponse<Long> recommendOneArticle(@PathVariable String articleId) {
+		long recommendResult = this.articlesService.recommendOneArticle(articleId);
+		return ApiResponse.OK(recommendResult);
 	}
 	
 

@@ -60,14 +60,35 @@ public class ArticlesServiceImpl implements ArticlesService {
 
 	@Override
 	public String deleteArticle(String articleId) {
-		String deleteId = articleId;
 		int deleteRows = this.articlesDao.deleteArticle(articleId);
 		
 		if (deleteRows == 0) {
 			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
 		}
 		
-		return deleteId;
+		return articleId;
+	}
+
+	@Override
+	public ArticlesVO readOneArticle(String articleId) {
+		
+		int getRows = this.articlesDao.updateIncreaseViewCount(articleId);
+		if (getRows == 0) {
+			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+		}
+		
+		return this.articlesDao.selectArticleByArticleId(articleId);
+	}
+	
+	@Override
+	public long recommendOneArticle(String articleId) {
+		
+		long getRows = this.articlesDao.updateIncreaseRecommendCount(articleId);
+		if (getRows == 0) {
+			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+		}
+		
+		return getRows;
 	}
 
 }
