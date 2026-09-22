@@ -11,13 +11,6 @@ public class ArticleListVO {
 	
 	private List<ArticlesVO> articleList;
 	
-
-//	public ArticleListVO(long articleCount, List<ArticlesVO> articleList) {
-//		super();
-//		this.articleCount = articleCount;
-//		this.articleList = articleList;
-//	}
-
 	public long getArticleCount() {
 		return this.articleCount;
 	}
