@@ -32,7 +32,7 @@ public class ArticlesController {
 //	 */
 //	@Qualifier("articlesService")
 	
-	private final ArticlesService articlesService;
+	private ArticlesService articlesService;
 	
 	/**
 	 * Spring Framework 7.0 이상

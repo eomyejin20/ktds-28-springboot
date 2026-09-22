@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 @Service
 public class ArticlesServiceImpl implements ArticlesService {
 
-	private final ArticlesDao articlesDao;
+	private ArticlesDao articlesDao;
 
 //	public ArticlesServiceImpl(ArticlesDao articlesDao) {
 //		this.articlesDao = articlesDao;
