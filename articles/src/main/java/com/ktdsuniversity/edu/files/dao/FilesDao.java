@@ -12,5 +12,5 @@ public interface FilesDao {
 	
 	int insertNewFile(RequestFileVO requestFileVO);
 	
-	
+	int deleteFilesByArticleId(String articleId);
 }

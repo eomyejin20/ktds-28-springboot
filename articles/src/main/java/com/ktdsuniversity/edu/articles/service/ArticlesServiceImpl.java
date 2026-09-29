@@ -45,7 +45,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 
 	@Override
 	public ArticlesVO createNewArticle(RegistArticleVO registArticleVO) {
-if (registArticleVO.getFile() != null) {
+		if (registArticleVO.getFile() != null) {
 			
 			// FILE_SET 생성.
 			RequestFileSetVO fileSetVO = new RequestFileSetVO();
@@ -118,12 +118,14 @@ if (registArticleVO.getFile() != null) {
 
 	@Override
 	public String deleteArticle(String articleId) {
+		int deleteFiles = this.filesDao.deleteFilesByArticleId(articleId);
+		if (deleteFiles == 0) {
+			System.out.println("삭제할 파일이 존재하지 않습니다.");
+		}
 		int deleteRows = this.articlesDao.deleteArticle(articleId);
-		
 		if (deleteRows == 0) {
 			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
 		}
-		
 		return articleId;
 	}
 

@@ -45,4 +45,11 @@
            , 0 
            , 'N')
     </insert>
+    <update id="deleteFilesByArticleId" parameterType="string">
+       UPDATE FILES
+          SET DEL_YN = 'Y'
+        WHERE FILE_SET_ID = ( SELECT FILE_SET_ID
+                                FROM ARTICLES A
+                               WHERE ID = #{_parameter})
+    </update>
 </mapper>

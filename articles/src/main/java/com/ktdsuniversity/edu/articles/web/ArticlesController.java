@@ -88,8 +88,12 @@ public class ArticlesController {
 	@DeleteMapping("/articles/{articleId}")
 	@ResponseBody
 	public ApiResponse<String> deleteArticle(@PathVariable String articleId) {
-		String deleteResult = this.articlesService.deleteArticle(articleId);
-		return ApiResponse.OK(deleteResult);
+		try {
+			String deleteResult = this.articlesService.deleteArticle(articleId);
+			return ApiResponse.OK(deleteResult);
+		} catch (IllegalArgumentException iae) {
+			return ApiResponse.FORBIDDEN(iae.getMessage());
+		}
 	}
 	
 	/**
