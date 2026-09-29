@@ -18,32 +18,31 @@
             INSERT INTO FILE_SET 
 			 (ID
 			, EMAIL
-			, CRT_DT)
+			, CRT_DT
+			, MDFY_DT)
 			VALUES
 			(#{id}
 			, #{email}
-			, SYSDATE)
+			, SYSDATE
+			, NULL)
     </insert>
     <insert id="insertNewFile" 
             parameterType="com.ktdsuniversity.edu.files.vo.request.RequestFileVO">
-            <selectKey order="BEFORE" keyProperty="id"
-            resultType="string">
-            SELECT 'FL-' || TO_CHAR(SYSDATE , 'YYYYMMDD-') ||
-            LPAD(SEQ_FILES_PK.NEXTVAL, 6,
-            '0')
-            FROM DUAL
-        </selectKey>
             INSERT INTO FILES
             (ID
 		    , FILE_SET_ID
 		    , DISPLAY_FILE_NAME
 		    , OBFUSCATE_FILE_NAME
-		    , FILE_SIZE)
+		    , FILE_SIZE
+		    , DOWNLOAD_COUNT
+            , DEL_YN)
            VALUES
-            (#{id}
+            ('FL-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_FILES_PK.NEXTVAL, 6, '0')
            , #{fileSetId}
            , #{displayFileName}
            , #{obfuscateFileName}
-           , #{fileSize})
+           , #{fileSize}
+           , 0 
+           , 'N')
     </insert>
 </mapper>

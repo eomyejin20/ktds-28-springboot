@@ -3,6 +3,7 @@ package com.ktdsuniversity.edu.articles.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,61 +45,66 @@ public class ArticlesServiceImpl implements ArticlesService {
 
 	@Override
 	public ArticlesVO createNewArticle(RegistArticleVO registArticleVO) {
-		int insertedRows = this.articlesDao.insertNewArticle(registArticleVO);
-		System.out.println(insertedRows + "개가 만들어졌습니다.");
+if (registArticleVO.getFile() != null) {
+			
+			// FILE_SET 생성.
+			RequestFileSetVO fileSetVO = new RequestFileSetVO();
+			fileSetVO.setEmail(registArticleVO.getEmail());
+			
+			int fileSetInsertCount = this.filesDao.insertNewFileSet(fileSetVO);
+			if (fileSetInsertCount == 0) {
+				throw new IllegalArgumentException("파일세트 생성을 할 수 없습니다.");
+			}
+			
+			registArticleVO.setFileSetId( fileSetVO.getId() );
+			
+			for (MultipartFile f: registArticleVO.getFile()) {
+				// 사용자가 업로드한 파일을 서버 컴퓨터에 저장한다.
+				// 1. 저장할 위치 선정.
+				// 사용자 홈 디렉토리 찾기.
+				String homeDirectory = System.getProperty("user.home");
 
-		if (insertedRows > 0) {
-			if (registArticleVO.getFile() != null) {
-				
-				//fileset생성
-				RequestFileSetVO fileSetVO = new RequestFileSetVO();
-				fileSetVO.setEmail(registArticleVO.getEmail());
-				int fileSetInsertCount = this.filesDao.insertNewFileSet(fileSetVO);
-				
-				if (fileSetInsertCount == 0) {
-					throw new IllegalArgumentException("파일 세트를 생성할 수 없습니다.");
+				File uploadFolder = new File(homeDirectory, "uploadFiles");
+				if (!uploadFolder.exists()) {
+					uploadFolder.mkdirs();
 				}
-				
-				// fileSetId값을 전달
-				registArticleVO.setFileSetId(fileSetVO.getId());
-				
-				for (MultipartFile f: registArticleVO.getFile()) {
-					String homeDirectory = System.getProperty("user.home");
-					   
-					   File uploadFolder = new File(homeDirectory, "uploadFiles");
-					   if (!uploadFolder.exists()) {
-						   uploadFolder.mkdirs();
-					   }
-					   
-					   // 파일이 저장될 위치와 이름 지정하기
-					   File storeFile = new File(uploadFolder, f.getOriginalFilename());
-					   
-					   // 2. 파일 저장.
-					   try {
-						   f.transferTo(storeFile);
-						   
-						   // FILES 데이터 생성
-						   RequestFileVO fileVO = new RequestFileVO();
-						   fileVO.setFileSetId(fileSetVO.getId());
-						   fileVO.setDisplayFileName(f.getOriginalFilename());
-						   fileVO.setObfuscateFileName(storeFile.getName());
-						   fileVO.setFileSize(storeFile.length());
-						   
-						   this.filesDao.insertNewFile(fileVO);
-						   
-					   } catch (IllegalStateException | IOException e) {
-						   throw new IllegalArgumentException(e.getMessage());
-					   }
+
+				// 파일이 저장될 위치와 이름 지정하기
+//				File storeFile = new File(uploadFolder, f.getOriginalFilename());
+				File storeFile = new File(uploadFolder, UUID.randomUUID().toString() );
+
+				// 2. 파일 저장.
+				try {
+					f.transferTo(storeFile);
+					
+					// FILES 데이터 생성.
+					RequestFileVO fileVO = new RequestFileVO();
+					fileVO.setFileSetId(fileSetVO.getId());
+					fileVO.setDisplayFileName(f.getOriginalFilename());
+					fileVO.setObfuscateFileName( storeFile.getName() );
+					fileVO.setFileSize( storeFile.length() );
+					
+					this.filesDao.insertNewFile(fileVO);
+				} catch (IllegalStateException | IOException e) {
+					throw new IllegalArgumentException(e.getMessage());
 				}
 			}
-			return this.articlesDao.selectArticleByArticleId(registArticleVO.getId());
 		}
-		// Insert한 게시글의 Id로 게시글 정보 조회
-		// -> Id는 무엇인가?
+		
+		int insertedRows = this.articlesDao.insertNewArticle(registArticleVO);
+		
+		// Insert한 게시글의 ID로 게시글 정보를 조회한다.
+		// -> Insert한 게시글의 ID가 뭔지 모른다.
+		
+		System.out.println(insertedRows + "개의 row가 생성되었습니다.");
+		
+		if (insertedRows > 0) {
+			return this.articlesDao.selectArticleByArticleId( registArticleVO.getId() );
+		}
+		
 		throw new IllegalArgumentException("입력값이 유효하지 않습니다.");
-		
-		
 	}
+	
 
 	@Override
 	public ArticlesVO updateArticle(String articleId, ModifyArticleVO modifyArticleVO) {
