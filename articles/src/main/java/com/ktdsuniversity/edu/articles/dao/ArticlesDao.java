@@ -54,20 +54,7 @@ public interface ArticlesDao {
 	int updateIncreaseViewCount(String articleId);
 
 	//게시글 추천수 증가
-	int updateIncreaseRecommendCount(String articleId);
+	long updateIncreaseRecommendCount(String articleId);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

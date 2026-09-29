@@ -61,7 +61,7 @@
 		, #{content}
 		, #{email}
 		, SYSDATE
-		, NULL)
+		, #{fileSetId})
 	</insert>
 	<select id="selectArticleByArticleId" parameterType="string"
 		resultType="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO">
