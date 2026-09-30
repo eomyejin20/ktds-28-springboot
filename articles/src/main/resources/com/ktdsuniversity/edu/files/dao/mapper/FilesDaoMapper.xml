@@ -45,11 +45,31 @@
            , 0 
            , 'N')
     </insert>
-    <update id="deleteFilesByArticleId" parameterType="string">
+    
+    
+    <select id="selectFilesByFileSetId" parameterType="string" 
+            resultType="com.ktdsuniversity.edu.files.vo.response.FilesVO">
+            SELECT ID
+                 , FILE_SET_ID
+                 , DISPLAY_FILE_NAME
+                 , OBFUSCATE_FILE_NAME
+                 , FILE_SIZE
+                 , DOWNLOAD_COUNT
+                 , DEL_YN
+              FROM FILES
+             WHERE FILE_SET_ID = #{fileSetId}
+               AND DEL_YN = 'N'
+    </select>
+    <!-- <update id="deleteFilesByArticleId" parameterType="string">
        UPDATE FILES
           SET DEL_YN = 'Y'
         WHERE FILE_SET_ID = ( SELECT FILE_SET_ID
                                 FROM ARTICLES A
                                WHERE ID = #{_parameter})
+    </update>-->
+    <update id="deleteFilesByFileSetId" parameterType="string">
+        UPDATE FILES
+           SET DEL_YN = 'Y'
+         WHERE FILE_SET_ID = #{fileSetId}
     </update>
 </mapper>

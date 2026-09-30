@@ -74,7 +74,7 @@ public class ArticlesController {
 	@PutMapping("/articles/{articleId}")
 	@ResponseBody
 	public ApiResponse<ArticlesVO> updateArticle(@PathVariable String articleId, 
-									@RequestBody ModifyArticleVO modifyArticleVO) {
+									ModifyArticleVO modifyArticleVO) {
 		ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);
 		return ApiResponse.OK(result);
 	}

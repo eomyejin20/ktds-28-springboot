@@ -226,6 +226,7 @@
 		SET SUBJECT =#{modifyArticleVO.subject}
 		, CONTENT =#{modifyArticleVO.content}
 		, MDFY_DT = SYSDATE
+		, FILE_SET_ID = #{modifyArticleVO.fileSetId}
 		WHERE ID = #{articleId}
 		AND EMAIL = #{modifyArticleVO.email}
 		AND DEL_YN = 'N'
