@@ -2,6 +2,7 @@ package com.ktdsuniversity.edu.files.components;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,8 +14,6 @@ import com.ktdsuniversity.edu.files.dao.FilesDao;
 import com.ktdsuniversity.edu.files.vo.request.RequestFileSetVO;
 import com.ktdsuniversity.edu.files.vo.request.RequestFileVO;
 import com.ktdsuniversity.edu.files.vo.response.FilesVO;
-
-//import lombok.AllArgsConstructor;
 
 //@AllArgsConstructor
 @Component
@@ -50,7 +49,7 @@ public class MultipartHandler {
 	 */
 	public String storeFiles(List<MultipartFile> file, String email, String fileSetId) {
 
-		if (file == null) {
+		if (this.isEmpty(file)) {
 			return fileSetId;
 		}
 
@@ -66,20 +65,19 @@ public class MultipartHandler {
 			fileSetId = fileSetVO.getId();
 		}
 
-		String homeDirectory = System.getProperty("user.home");
-		File uploadPath = new File(homeDirectory, this.uploadFolderName);
-		if (!uploadPath.exists()) {
-			uploadPath.mkdirs();
-		}
+		File uploadPath = this.getUploadPath();
 
 		File storeFile = null;
 		RequestFileVO fileVO = null;
 
+		List<File> storedFileList = new ArrayList<>();
+		
 		for (MultipartFile multipartFile : file) {
 			storeFile = new File(uploadPath, UUID.randomUUID().toString());
 			try {
 				multipartFile.transferTo(storeFile);
-
+				storedFileList.add(storeFile);
+				
 				fileVO = new RequestFileVO();
 				fileVO.setFileSetId(fileSetId);
 				fileVO.setDisplayFileName(multipartFile.getOriginalFilename());
@@ -88,6 +86,9 @@ public class MultipartHandler {
 
 				this.filesDao.insertNewFile(fileVO);
 			} catch (IllegalStateException | IOException e) {
+				// 업로드 중 예외 발생하면 업로드된 파일 제거
+				storedFileList.forEach(f -> f.delete());
+				
 				throw new IllegalArgumentException(e.getMessage(), e);
 			}
 		}
@@ -97,34 +98,33 @@ public class MultipartHandler {
 
 	public int deleteFiles(String fileSetId) {
 		// 파일의 물리적 삭제 진행.
-		// FILES에서 FILE_SET_ID를 이용해 파일의 난독화된 이름을 조회
+		// FILES에서 FILE_SET_ID를 이용해 파일의 난독화된 이름을 조회.
 		List<FilesVO> files = this.filesDao.selectFilesByFileSetId(fileSetId);
 
-		// fileSetId로 FILES 테이블의 DEL_YN을 Y로 변경한다
-		int deleteCount = this.filesDao.deleteFilesByFileSetId(fileSetId);
-		// 조회된 파일의 이름으로 파일 물리적 삭제를 진행한다.
-		// 파일이 저장되어 있는 위치 정보가 필요함
-		String homeDirectory = System.getProperty("user.home");
-		File uploadPath = new File(homeDirectory, "uploadFiles");
-
-//		for (FilesVO file: files) {
-//			new File(uploadPath, file.getObfuscateFileName())
-//					.delete();
-//		}
+		// 조회된 파일의 이름으로 파일 물리적 삭제 진행.
+		// 파일이 저장되어있는 위치정보 필요.
+		File uploadPath = this.getUploadPath();
 
 		for (FilesVO file : files) {
-			File targetFile = new File(uploadPath, file.getObfuscateFileName());
-			System.out.println("삭제 대상 : " + targetFile.getAbsolutePath());
-
-			if (targetFile.exists()) {
-				boolean deleted = targetFile.delete();
-				System.out.println("물리적 삭제 : " + deleted);
-			} else {
-				System.out.println("파일이 존재하지 않음");
-			}
+			new File(uploadPath, file.getObfuscateFileName()).delete();
 		}
 
+		// fileSetId로 FILES 테이블의 DEL_YN을 Y로 변경한다.
+		int deleteCount = this.filesDao.deleteFilesByFileSetId(fileSetId);
 		return deleteCount;
 	}
 
+	private boolean isEmpty(List<MultipartFile> file) {
+		return file == null || file.stream().allMatch(f -> f.isEmpty());
+	}
+
+	private File getUploadPath() {
+		String homeDirectory = System.getProperty("user.home");
+		File uploadPath = new File(homeDirectory, this.uploadFolderName);
+		if (!uploadPath.exists()) {
+			uploadPath.mkdirs();
+		}
+		return uploadPath;
+	}
+	
 }
