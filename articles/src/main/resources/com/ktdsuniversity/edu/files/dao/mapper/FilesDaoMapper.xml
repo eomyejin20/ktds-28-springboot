@@ -72,4 +72,25 @@
            SET DEL_YN = 'Y'
          WHERE FILE_SET_ID = #{fileSetId}
     </update>
+    <select id="selectAttachFile"
+            resultType="com.ktdsuniversity.edu.files.vo.response.FilesVO">
+            SELECT ID
+                 , FILE_SET_ID
+                 , DISPLAY_FILE_NAME
+                 , OBFUSCATE_FILE_NAME
+                 , FILE_SIZE
+                 , DOWNLOAD_COUNT
+                 , DEL_YN
+              FROM FILES
+             WHERE FILE_SET_ID = #{fileSetId}
+               AND ID = #{fileId}
+               AND DEL_YN = 'N'
+    </select>
+    <update id="updateIncreaseDownloadCount">
+        UPDATE FILES
+           SET DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+         WHERE FILE_SET_ID = #{fileSetId}
+           AND ID = #{fileId}
+           AND DEL_YN = 'N'
+    </update>
 </mapper>

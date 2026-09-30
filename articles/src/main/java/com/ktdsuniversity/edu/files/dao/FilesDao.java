@@ -3,6 +3,7 @@ package com.ktdsuniversity.edu.files.dao;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.ktdsuniversity.edu.files.vo.request.RequestFileSetVO;
 import com.ktdsuniversity.edu.files.vo.request.RequestFileVO;
@@ -22,4 +23,8 @@ public interface FilesDao {
 //	int updateFilesByArticleId(String articleId);
 	
 	List<FilesVO> selectFilesByFileSetId(String fileSetId);
+
+	FilesVO selectAttachFile(@Param("fileSetId") String fileSetId, @Param("fileId") String fileId);
+
+	int updateIncreaseDownloadCount(@Param("fileSetId") String fileSetId, @Param("fileId") String fileId);
 }
