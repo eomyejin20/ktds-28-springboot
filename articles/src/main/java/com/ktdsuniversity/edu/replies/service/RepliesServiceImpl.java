@@ -3,14 +3,19 @@ package com.ktdsuniversity.edu.replies.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ktdsuniversity.edu.files.components.MultipartHandler;
+import com.ktdsuniversity.edu.members.vo.response.MembersVO;
 import com.ktdsuniversity.edu.replies.dao.RepliesDao;
 import com.ktdsuniversity.edu.replies.vo.request.ModifyReplyVO;
 import com.ktdsuniversity.edu.replies.vo.request.RegistReplyVO;
 import com.ktdsuniversity.edu.replies.vo.response.RepliesVO;
 import com.ktdsuniversity.edu.replies.vo.response.ReplyListVO;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -68,7 +73,17 @@ public class RepliesServiceImpl implements RepliesService {
 
 	@Override
 	public String deleteReply(String articleId, String replyId) {
+		ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		HttpServletRequest request = requestAttributes.getRequest();
+		HttpSession session = request.getSession();
+		
 		RepliesVO reply = this.repliesDao.selectReplyById(articleId, replyId);
+		
+		
+		MembersVO loggedMember = (MembersVO) session.getAttribute("__LOGIN_USER__");
+		if (!loggedMember.getEmail().equals(reply.getEmail())) {
+			throw new IllegalArgumentException("삭제할 수 없는 댓글입니다.");
+		}
 		
 		int deleteRows = this.repliesDao.deleteReply(articleId, replyId);
 		if (deleteRows == 0) {

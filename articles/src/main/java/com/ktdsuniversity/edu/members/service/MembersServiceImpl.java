@@ -1,0 +1,177 @@
+package com.ktdsuniversity.edu.members.service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.ktdsuniversity.edu.commons.crypto.AES;
+import com.ktdsuniversity.edu.commons.crypto.encrypt.hash.SHA;
+import com.ktdsuniversity.edu.members.dao.MembersDao;
+import com.ktdsuniversity.edu.members.vo.request.LoginMemberVO;
+import com.ktdsuniversity.edu.members.vo.request.RegistMembersVO;
+import com.ktdsuniversity.edu.members.vo.response.MembersVO;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class MembersServiceImpl implements MembersService {
+
+	@Value("${app.encrypt.aes.key}")
+	private String aesSecretKey;
+
+	private final MembersDao membersDao;
+
+	@Override
+	public MembersVO createNewMember(RegistMembersVO registMembersVO) {
+
+		String email = registMembersVO.getEmail();
+		int emailCount = this.membersDao.selectEmailCount(email);
+		if (emailCount > 0) {
+			throw new IllegalArgumentException(email + "은 이미 사용중입니다.");
+		}
+
+		String nickname = registMembersVO.getNickname();
+		int nicknameCount = this.membersDao.selectNicknameCount(nickname);
+		if (nicknameCount > 0) {
+			throw new IllegalArgumentException(nickname + "은 이미 사용중입니다.");
+		}
+
+		String rawName = registMembersVO.getName();
+		String encryptedName = AES.encode(this.aesSecretKey, rawName);
+		registMembersVO.setName(encryptedName);
+
+		String rawNickname = registMembersVO.getNickname();
+		String encryptedNickname = AES.encode(this.aesSecretKey, rawNickname);
+		registMembersVO.setNickname(encryptedNickname);
+
+		String rawPassword = registMembersVO.getPassword();
+		String salt = SHA.generateSalt();
+		String encryptedPassword = SHA.getEncrypt(rawPassword, salt);
+
+		registMembersVO.setSalt(salt);
+		registMembersVO.setPassword(encryptedPassword);
+
+		int insertCount = this.membersDao.insertNewMember(registMembersVO);
+		if (insertCount == 0) {
+			throw new IllegalArgumentException("회원가입을 할 수 없습니다. 다시 시도해주세요");
+		}
+
+		MembersVO newMember = this.membersDao.selectMemberByEmail(email);
+		newMember.setName(AES.decode(this.aesSecretKey, newMember.getName()));
+		newMember.setNickname(AES.decode(this.aesSecretKey, newMember.getNickname()));
+		return newMember;
+	}
+
+	@Override
+	public MembersVO readMember(LoginMemberVO loginMemberVO) {
+
+		MembersVO membersVO = this.membersDao.selectMemberByEmail(loginMemberVO.getEmail());
+
+		if (membersVO == null) {
+			throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
+		}
+
+		if (membersVO.getLoginBlockYn().equals("Y")) {
+			// 차단계정
+			// 차단된 후 1시간이 지났는가?
+			LocalDateTime now = LocalDateTime.now();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime loginBlockDate = LocalDateTime.parse(membersVO.getLoginBlockDate(), formatter);
+			loginBlockDate.plusHours(1);
+			System.out.println(loginBlockDate);
+
+			if (now.equals(loginBlockDate) || now.isAfter(loginBlockDate)) {
+				// 차단 후 1시간 경과
+				// 로그인 실패 횟수 0으로 초기화 &차단여부 N으로 수정
+				int updateRows = this.membersDao.updateResetBlock(loginMemberVO.getEmail());
+				System.out.println(updateRows + "건이 블락 해제되었음");
+			} else {
+				throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
+			}
+		}
+
+		// 활성계정
+		// 사용자 salt필요
+		// 로그인요청비밀번호
+		// 암호화
+		String rawPassword = loginMemberVO.getPassword();
+		String storedSalt = membersVO.getSalt();
+		String encrytedPassword = SHA.getEncrypt(rawPassword, storedSalt);
+
+		if (encrytedPassword.equals(membersVO.getPassword())) {
+			// 비밀번호 일치함
+			int updateRows = this.membersDao.updateLoginStatus(membersVO.getEmail());
+			if (updateRows == 0) {
+				throw new IllegalArgumentException("로그인을 실패했습니다. 잠시 후 다시 시도해주세요.");
+			}
+			MembersVO loggedMember = this.membersDao.selectMemberByEmail(membersVO.getEmail());
+			loggedMember.setName(AES.decode(this.aesSecretKey, loggedMember.getName()));
+			loggedMember.setNickname(AES.decode(this.aesSecretKey, loggedMember.getNickname()));
+			return loggedMember;
+		}
+
+		int updateRows = this.membersDao.updateLoginFailed(membersVO.getEmail());
+		System.out.println(membersVO.getEmail() + "로그인실패");
+
+		int blockUpdateRows = this.membersDao.updateBlock(membersVO.getEmail());
+		if (blockUpdateRows > 0) {
+			// 계정이 차단
+			throw new IllegalArgumentException("계정이 차단되었습니다.");
+		}
+
+		// 비밀번호가 틀렸으므로 사용자 정보를 반환하지 않음
+		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 일치하지 않습니다.");
+
+	}
+
+	@Override
+	public String updateLogoutStatus(String email) {
+		int updatedRows = this.membersDao.updateLogoutStatus(email);
+
+		if (updatedRows > 0) {
+			return email;
+		}
+		return null;
+	}
+
+	@Override
+	public String deleteMember(String email, String password) {
+		// 로그인된 회원의 이메일로 회원 정보를 조회
+		ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		HttpServletRequest request = requestAttributes.getRequest();
+		HttpSession session = request.getSession();
+		//현재 로그인
+		MembersVO member = (MembersVO) session.getAttribute("__LOGIN_USER__");
+		
+		
+		MembersVO loggedMember = this.membersDao.selectMemberByEmail(member.getEmail());
+		if (loggedMember == null) {
+			throw new IllegalArgumentException("존재하지 않는 회원입니다.");
+		}
+		
+		
+	    String salt = loggedMember.getSalt();
+	    String encryptedPassword = SHA.getEncrypt(password, salt);
+	    if (!loggedMember.getPassword().equals(encryptedPassword)) {
+	        throw new IllegalArgumentException("탈퇴 실패. 비밀번호가 틀렸습니다.");
+	    }
+
+		int deleteRows = this.membersDao.deleteMember(email);
+		if (deleteRows == 0) {
+			throw new IllegalArgumentException("회원 탈퇴에 실패하였습니다.");
+		}
+		// 로그아웃 처리
+		updateLogoutStatus(email);
+		return email + "의 탈퇴가 완료되었습니다.";
+	}
+
+}

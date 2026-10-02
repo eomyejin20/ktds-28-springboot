@@ -1,6 +1,12 @@
 package com.ktdsuniversity.edu.commons.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -11,13 +17,15 @@ import lombok.Data;
 @JsonInclude(Include.NON_NULL)
 public class ApiResponse<T> {
 
-	private int httpStatusCode; //200, 500, 400
-	private String httpStatusMessage; //OK
-	private T body; //응답데이터
+	private int httpStatusCode;
+	private String httpStatusMessage;
+	
+	private T body;
 	
 	private String error;
 	
-	// 200 OK
+	private Map<String, List<String>> validations;
+	
 	public static <T> ApiResponse<T> OK(T t) {
 		ApiResponse<T> result = new ApiResponse<>();
 		result.setHttpStatusCode(HttpStatus.OK.value());
@@ -27,7 +35,6 @@ public class ApiResponse<T> {
 		return result;
 	}
 	
-	// 201 CREATED
 	public static <T> ApiResponse<T> CREATED(T t) {
 		ApiResponse<T> result = new ApiResponse<>();
 		result.setHttpStatusCode(HttpStatus.CREATED.value());
@@ -37,7 +44,6 @@ public class ApiResponse<T> {
 		return result;
 	}
 	
-	// 500 INTERNAL_SERVER_ERROR
 	public static <T> ApiResponse<T> ERROR(String message) {
 		ApiResponse<T> result = new ApiResponse<>();
 		result.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -47,7 +53,6 @@ public class ApiResponse<T> {
 		return result;
 	}
 	
-	// 403 FORBIDDEN(권한 인증X)
 	public static <T> ApiResponse<T> FORBIDDEN(String message) {
 		ApiResponse<T> result = new ApiResponse<>();
 		result.setHttpStatusCode(HttpStatus.FORBIDDEN.value());
@@ -56,4 +61,23 @@ public class ApiResponse<T> {
 		
 		return result;
 	}
+	
+	public static <T> ApiResponse<T> BAD_REQUEST(List<FieldError> errors) {
+		
+		ApiResponse<T> result = new ApiResponse<>();
+		result.setHttpStatusCode(HttpStatus.BAD_REQUEST.value());
+		result.setHttpStatusMessage(HttpStatus.BAD_REQUEST.getReasonPhrase());
+		
+		result.validations = new HashMap<>();
+		errors.forEach(error -> {
+			String fieldName = error.getField();
+			if ( ! result.validations.containsKey(fieldName) ) {
+				List<String> errorMessages = new ArrayList<>();
+				result.validations.put(fieldName, errorMessages);
+			}
+			result.validations.get(fieldName).add(error.getDefaultMessage());
+		});
+		return result;
+	}
+	
 }
