@@ -1,5 +1,7 @@
 package com.ktdsuniversity.edu.members.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.ktdsuniversity.edu.commons.util.ApiResponse;
 import com.ktdsuniversity.edu.members.service.MembersService;
@@ -24,8 +27,9 @@ import lombok.AllArgsConstructor;
 public class MembersController {
 
 	private MembersService membersService;
+	private static final Logger logger = LoggerFactory.getLogger(MembersController.class);
 	
-	@PostMapping("/members")
+	@PostMapping("/members/signup")
 	public ApiResponse<MembersVO> createNewMember(
 					@Valid @RequestBody RegistMembersVO registMembersVO,
 					BindingResult validationResults
@@ -56,7 +60,7 @@ public class MembersController {
 			BindingResult validationResult,
 			HttpSession session) {
 		
-		System.out.println(session.getId() + "<--SessionID"); //B50556EE466B38699F28B0364B0EB2DA
+		logger.info("{} <--SessionID", session.getId());//B50556EE466B38699F28B0364B0EB2DA
 		
 		if (validationResult.hasErrors()) {
 			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
@@ -74,12 +78,13 @@ public class MembersController {
 	}
 	
 	@GetMapping("/members/logout")
-	public ApiResponse<String> logout(HttpSession session) {
+	public ApiResponse<String> logout(HttpSession session,
+			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO) {
 		
-		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-		if (membersVO == null) {
-			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-		}
+//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+//		if (membersVO == null) {
+//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+//		}
 		
 		// session 만료 처리
 		// 만료된 session의 ID는 더이상 사용할수없음
@@ -91,13 +96,14 @@ public class MembersController {
 	}
 	
 	@DeleteMapping("/members/delete")
-	public ApiResponse<String> exitMember(HttpSession session, 
-										@RequestParam String password) {
-		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-		System.out.println(membersVO);
-		if (membersVO == null) {
-			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-		}
+	public ApiResponse<String> exitMember(
+//			HttpSession session 
+			@RequestParam String password,
+			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO) {
+//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+//		if (membersVO == null) {
+//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+//		}
 		String email = this.membersService.deleteMember(membersVO.getEmail(), password);
 		
 		return ApiResponse.OK(email);

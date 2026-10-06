@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.ktdsuniversity.edu.commons.util.ApiResponse;
 import com.ktdsuniversity.edu.members.vo.response.MembersVO;
@@ -28,7 +29,7 @@ public class RepliesController {
 
 	private RepliesService repliesService;
 
-	@GetMapping("/articles/{articleId}/replies")
+	@GetMapping("/articles/{articleId}/replies/list")
 	public ApiResponse<ReplyListVO> getReplies(
 			@Pattern(regexp = "^AR-[0-9]{8}-[0-9]{6,8}$", message="잘못된 요청입니다.") 
 			@PathVariable String articleId) {
@@ -45,16 +46,18 @@ public class RepliesController {
 			@PathVariable String articleId, 
 			@Valid @ModelAttribute RegistReplyVO registRepliesVO,
 			BindingResult validationResult,
-			HttpSession session) {
+			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO
+//			HttpSession session
+			) {
 		
 		if (validationResult.hasErrors()) {
 			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
 		}
 		//HttpSession에 있는 __LOGIN_USER__에 있는 email을 꺼내 RegistArticleVO에 할당
-		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-		if (membersVO == null) {
-			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-		}
+//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+//		if (membersVO == null) {
+//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+//		}
 		registRepliesVO.setEmail(membersVO.getEmail());
 		
 		try {
@@ -72,17 +75,19 @@ public class RepliesController {
 			@PathVariable String replyId,
 			@Valid @ModelAttribute ModifyReplyVO modifyReplyVO,
 			BindingResult validationResult,
-			HttpSession session) {
+			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO
+//			HttpSession session
+			) {
 		
 		if (validationResult.hasErrors()) {
 			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
 		}
 		
 		//HttpSession에 있는 __LOGIN_USER__에 있는 email을 꺼내 RegistArticleVO에 할당
-		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-		if (membersVO == null) {
-			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-		}
+//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+//		if (membersVO == null) {
+//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+//		}
 		modifyReplyVO.setEmail(membersVO.getEmail());
 		
 		try {

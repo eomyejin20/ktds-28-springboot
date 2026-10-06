@@ -2,6 +2,8 @@ package com.ktdsuniversity.edu.replies.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -24,6 +26,7 @@ public class RepliesServiceImpl implements RepliesService {
 
 	private RepliesDao repliesDao;
 	private MultipartHandler multipartHandler;
+	private static final Logger logger = LoggerFactory.getLogger(RepliesServiceImpl.class);
 
 	@Override
 	public ReplyListVO readAllReplies(String articleId) {
@@ -43,7 +46,7 @@ public class RepliesServiceImpl implements RepliesService {
 		registReplyVO.setFileSetId(fileSetID);
 		
 		int insertedRows = this.repliesDao.insertNewReply(articleId, registReplyVO);
-		System.out.println(insertedRows + "개의 row가 생성되었습니다.");
+		logger.info("{} 개의 row가 생성되었습니다.", insertedRows);
 		
 		if (insertedRows > 0) {
 			return this.repliesDao.selectReplyById(articleId, registReplyVO.getId());
@@ -91,7 +94,7 @@ public class RepliesServiceImpl implements RepliesService {
 		}
 		
 		int deleteCount = this.multipartHandler.deleteFiles(reply.getFileSetId());
-		System.out.println(deleteCount + "개의 파일이 삭제되었습니다.");
+		logger.info("{}개의 파일이 삭제되었습니다.", deleteCount);
 		return articleId + replyId;
 	}
 

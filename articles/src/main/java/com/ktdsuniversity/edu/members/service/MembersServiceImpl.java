@@ -3,6 +3,8 @@ package com.ktdsuniversity.edu.members.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.ktdsuniversity.edu.commons.crypto.AES;
 import com.ktdsuniversity.edu.commons.crypto.encrypt.hash.SHA;
+import com.ktdsuniversity.edu.files.service.FilesServiceImpl;
 import com.ktdsuniversity.edu.members.dao.MembersDao;
 import com.ktdsuniversity.edu.members.vo.request.LoginMemberVO;
 import com.ktdsuniversity.edu.members.vo.request.RegistMembersVO;
@@ -29,6 +32,7 @@ public class MembersServiceImpl implements MembersService {
 	private String aesSecretKey;
 
 	private final MembersDao membersDao;
+	private static final Logger logger = LoggerFactory.getLogger(FilesServiceImpl.class);
 
 	@Override
 	public MembersVO createNewMember(RegistMembersVO registMembersVO) {
@@ -87,13 +91,13 @@ public class MembersServiceImpl implements MembersService {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 			LocalDateTime loginBlockDate = LocalDateTime.parse(membersVO.getLoginBlockDate(), formatter);
 			loginBlockDate.plusHours(1);
-			System.out.println(loginBlockDate);
+			logger.debug(loginBlockDate.toString());
 
 			if (now.equals(loginBlockDate) || now.isAfter(loginBlockDate)) {
 				// 차단 후 1시간 경과
 				// 로그인 실패 횟수 0으로 초기화 &차단여부 N으로 수정
 				int updateRows = this.membersDao.updateResetBlock(loginMemberVO.getEmail());
-				System.out.println(updateRows + "건이 블락 해제되었음");
+				logger.info("{}건이 블락 해제되었음", updateRows);
 			} else {
 				throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
 			}
@@ -120,7 +124,7 @@ public class MembersServiceImpl implements MembersService {
 		}
 
 		int updateRows = this.membersDao.updateLoginFailed(membersVO.getEmail());
-		System.out.println(membersVO.getEmail() + "로그인실패");
+		logger.info("{} 로그인실패", membersVO.getEmail());
 
 		int blockUpdateRows = this.membersDao.updateBlock(membersVO.getEmail());
 		if (blockUpdateRows > 0) {

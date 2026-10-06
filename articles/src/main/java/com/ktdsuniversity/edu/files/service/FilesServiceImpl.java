@@ -1,5 +1,7 @@
 package com.ktdsuniversity.edu.files.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.ktdsuniversity.edu.files.dao.FilesDao;
@@ -12,6 +14,8 @@ import lombok.AllArgsConstructor;
 public class FilesServiceImpl implements FilesService{
 	
 	private FilesDao filesDao;
+	private static final Logger logger = LoggerFactory.getLogger(FilesServiceImpl.class);
+	
 
 	@Override
 	public FilesVO readAttachFile(String fileSetId, String fileId) {
@@ -22,7 +26,7 @@ public class FilesServiceImpl implements FilesService{
 		}
 		
 		int updateRows = this.filesDao.updateIncreaseDownloadCount(fileSetId, fileId);
-		System.out.println(updateRows + "건이 변경되었습니다.");
+		logger.info("{}건이 변경되었습니다.", updateRows);
 		return filesVO;
 	}
 

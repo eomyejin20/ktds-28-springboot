@@ -1,6 +1,6 @@
-logging:
-  level:
-    root: debug
+#logging:
+#  level:
+#    root: debug
 
 spring:
   # file upload 용량제한하기
