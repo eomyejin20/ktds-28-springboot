@@ -13,6 +13,9 @@ import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
 import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
+import com.ktdsuniversity.edu.commons.exceptions.ArticleException;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ArticleCodes;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ExceptionType;
 import com.ktdsuniversity.edu.files.components.MultipartHandler;
 import com.ktdsuniversity.edu.members.vo.response.MembersVO;
 
@@ -113,7 +116,8 @@ public class ArticlesServiceImpl implements ArticlesService {
 			return this.articlesDao.selectArticleByArticleId( registArticleVO.getId() );
 		}
 		
-		throw new IllegalArgumentException("입력값이 유효하지 않습니다.");
+//		throw new IllegalArgumentException("입력값이 유효하지 않습니다.");
+		throw new ArticleException(ExceptionType.ARTICLES, ArticleCodes.BAD_REQUEST);
 	}
 	
 
