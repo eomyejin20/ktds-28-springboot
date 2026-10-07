@@ -12,6 +12,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.ktdsuniversity.edu.articles.dao.ArticlesDao;
 import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
 import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
+import com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 import com.ktdsuniversity.edu.commons.exceptions.ArticleException;
@@ -35,11 +36,12 @@ public class ArticlesServiceImpl implements ArticlesService {
 
 
 	@Override
-	public ArticleListVO readAllArticles() {
+	public ArticleListVO readAllArticles(SearchArticleVO searchArticleVO) {
 		ArticlesVO Test = new ArticlesVO();
 
-		long count = this.articlesDao.selectArticlesCount();
-		List<ArticlesVO> articleList = this.articlesDao.selectAllArticles();
+		long count = this.articlesDao.selectArticlesCount(searchArticleVO);
+		searchArticleVO.calculatePageCount(count);
+		List<ArticlesVO> articleList = this.articlesDao.selectAllArticles(searchArticleVO);
 
 		ArticleListVO list = new ArticleListVO();
 		list.setArticleCount(count);

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 import com.ktdsuniversity.edu.articles.service.ArticlesService;
 import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
 import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
+import com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 import com.ktdsuniversity.edu.commons.util.ApiResponse;
@@ -50,9 +51,13 @@ public class ArticlesController {
 	@GetMapping("/articles/list")
 	// 컨트롤러가 반환 시키는 "객체"를 "JSON" 으로 변환시키는 View를 사용해라! ==> @ResponseBody
 	@ResponseBody
-	public ApiResponse<ArticleListVO> getArticles() {
-		ArticleListVO result = this.articlesService.readAllArticles();
-		return ApiResponse.OK(result);
+	public ApiResponse<ArticleListVO> getArticles(SearchArticleVO searchArticleVO) {
+		ArticleListVO result = this.articlesService.readAllArticles(searchArticleVO);
+		
+		ApiResponse<ArticleListVO> response = ApiResponse.OK(result);
+		response.setPaginate(searchArticleVO);
+		
+		return response;
 	}
 
 	@PostMapping("/articles")
