@@ -47,17 +47,11 @@ public class RepliesController {
 			@Valid @ModelAttribute RegistReplyVO registRepliesVO,
 			BindingResult validationResult,
 			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO
-//			HttpSession session
 			) {
 		
 		if (validationResult.hasErrors()) {
 			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
 		}
-		//HttpSession에 있는 __LOGIN_USER__에 있는 email을 꺼내 RegistArticleVO에 할당
-//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-//		if (membersVO == null) {
-//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-//		}
 		registRepliesVO.setEmail(membersVO.getEmail());
 		
 		try {
@@ -76,18 +70,12 @@ public class RepliesController {
 			@Valid @ModelAttribute ModifyReplyVO modifyReplyVO,
 			BindingResult validationResult,
 			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO
-//			HttpSession session
 			) {
 		
 		if (validationResult.hasErrors()) {
 			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
 		}
 		
-		//HttpSession에 있는 __LOGIN_USER__에 있는 email을 꺼내 RegistArticleVO에 할당
-//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-//		if (membersVO == null) {
-//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-//		}
 		modifyReplyVO.setEmail(membersVO.getEmail());
 		
 		try {

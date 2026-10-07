@@ -37,7 +37,6 @@ public class ArticlesController {
 //	 * 객체 명이 ""articlesServiceImpl" 인 객체를 멤버변수에 할당시켜라!
 //	 */
 //	@Qualifier("articlesServiceImpl")
-//	private ArticlesService articlesService;
 
 	private ArticlesService articlesService;
 
@@ -47,9 +46,6 @@ public class ArticlesController {
 	 * 대신, 생성자를 이용한 DI를 권장한다. ==> 이유: Lombok Library 때문... (Getter, Setter, 생성자,
 	 * toString 자동생성)
 	 */
-//	public ArticlesController(ArticlesService articlesService) {
-//		this.articlesService = articlesService;
-//	}
 
 	@GetMapping("/articles/list")
 	// 컨트롤러가 반환 시키는 "객체"를 "JSON" 으로 변환시키는 View를 사용해라! ==> @ResponseBody
@@ -66,7 +62,6 @@ public class ArticlesController {
 			// 클라이언트가 컨트롤러로 전송한 파라미터(폼파라미터, 쿼리스트링파라미터)를 자동으로 받아오는 역할.
 			@Valid @ModelAttribute RegistArticleVO registArticleVO,
 			BindingResult validationResult,
-//			HttpSession session
 //			HttpSession에 등록된 __LOGIN_USER__에 있는 MembersVO를 파라미터로 받아와라
 			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO
 	// 클라이언트가 컨트롤러로 전송한 파라미터(폼파라미터, 쿼리스트링파라미터)를 하나씩 받아오는 역할.
@@ -77,20 +72,11 @@ public class ArticlesController {
 			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
 		}
 		
-		//HttpSession에 있는 __LOGIN_USER__에 있는 email을 꺼내 RegistArticleVO에 할당
-//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-//		if (membersVO == null) {
-//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-//		}
 		registArticleVO.setEmail(membersVO.getEmail());
 		
 		
-		try {
 			ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
 			return ApiResponse.CREATED(result);
-		} catch (IllegalArgumentException iae) {
-			return ApiResponse.FORBIDDEN(iae.getMessage());
-		}
 	}
 
 	@PutMapping("/articles/{articleId}")
@@ -99,26 +85,16 @@ public class ArticlesController {
 			@PathVariable String articleId,
 			@Valid @ModelAttribute ModifyArticleVO modifyArticleVO,
 			BindingResult validationResult,
-//			HttpSession session
 			@SessionAttribute("__LOGIN_USER__") MembersVO membersVO
 			) {
 		if (validationResult.hasErrors()) {
 			return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
 		}
 		
-		//HttpSession에 있는 __LOGIN_USER__에 있는 email을 꺼내 RegistArticleVO에 할당
-//		MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
-//		if (membersVO == null) {
-//			throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
-//		}
 		modifyArticleVO.setEmail(membersVO.getEmail());
 		
-		try {
 			ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);
 			return ApiResponse.OK(result);
-		} catch (IllegalArgumentException iae) {
-			return ApiResponse.FORBIDDEN(iae.getMessage());
-		}
 	}
 
 	@DeleteMapping("/articles/{articleId}")
@@ -127,33 +103,21 @@ public class ArticlesController {
 			@Size(min=18, max=20, message="잘못된 값입니다.") 
 			@PathVariable String articleId) {
 		
-		try {
 			String deleteResult = this.articlesService.deleteArticle(articleId);
 			return ApiResponse.OK(deleteResult);
-		} catch (IllegalArgumentException iae) {
-			return ApiResponse.FORBIDDEN(iae.getMessage());
-		}
 	}
 
 	@GetMapping("/articles/{articleId}")
 	@ResponseBody
 	public ApiResponse<ArticlesVO> getOneArticle(@PathVariable String articleId) {
-		try {
 			ArticlesVO result = this.articlesService.readOneArticle(articleId);
 			return ApiResponse.OK(result);
-		} catch (IllegalArgumentException iae) {
-			return ApiResponse.FORBIDDEN(iae.getMessage());
-		}
 	}
 
 	@PutMapping("/articles/recommend/{articleId}")
 	@ResponseBody
 	public ApiResponse<Long> recommendOneArticle(@PathVariable String articleId) {
-		try {
 			long recommendResult = this.articlesService.recommendOneArticle(articleId);
 			return ApiResponse.OK(recommendResult);
-		} catch (IllegalArgumentException iae) {
-			return ApiResponse.FORBIDDEN(iae.getMessage());
-		}
 	}
 }

@@ -19,6 +19,7 @@ public class WebConfig implements WebMvcConfigurer{
 				.addPathPatterns("/**")
 				// 세션 체크를 하지 않을 URL 패턴 정의
 				.excludePathPatterns(
+						"/error",
 						"/members/login",
 						"/members/signup",
 						"/articles/list"

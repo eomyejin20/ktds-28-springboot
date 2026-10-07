@@ -14,6 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.ktdsuniversity.edu.commons.crypto.AES;
 import com.ktdsuniversity.edu.commons.crypto.encrypt.hash.SHA;
+import com.ktdsuniversity.edu.commons.exceptions.ArticleException;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ArticleCodes;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ExceptionType;
 import com.ktdsuniversity.edu.files.service.FilesServiceImpl;
 import com.ktdsuniversity.edu.members.dao.MembersDao;
 import com.ktdsuniversity.edu.members.vo.request.LoginMemberVO;
@@ -40,13 +43,13 @@ public class MembersServiceImpl implements MembersService {
 		String email = registMembersVO.getEmail();
 		int emailCount = this.membersDao.selectEmailCount(email);
 		if (emailCount > 0) {
-			throw new IllegalArgumentException(email + "은 이미 사용중입니다.");
+			throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.USED);
 		}
 
 		String nickname = registMembersVO.getNickname();
 		int nicknameCount = this.membersDao.selectNicknameCount(nickname);
 		if (nicknameCount > 0) {
-			throw new IllegalArgumentException(nickname + "은 이미 사용중입니다.");
+			throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.USED);
 		}
 
 		String rawName = registMembersVO.getName();
@@ -66,7 +69,7 @@ public class MembersServiceImpl implements MembersService {
 
 		int insertCount = this.membersDao.insertNewMember(registMembersVO);
 		if (insertCount == 0) {
-			throw new IllegalArgumentException("회원가입을 할 수 없습니다. 다시 시도해주세요");
+			throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.SYSTEM_ERROR);
 		}
 
 		MembersVO newMember = this.membersDao.selectMemberByEmail(email);
@@ -81,7 +84,7 @@ public class MembersServiceImpl implements MembersService {
 		MembersVO membersVO = this.membersDao.selectMemberByEmail(loginMemberVO.getEmail());
 
 		if (membersVO == null) {
-			throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
+			throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.NOT_MATCHED_IDENTIFY);
 		}
 
 		if (membersVO.getLoginBlockYn().equals("Y")) {
@@ -99,7 +102,7 @@ public class MembersServiceImpl implements MembersService {
 				int updateRows = this.membersDao.updateResetBlock(loginMemberVO.getEmail());
 				logger.info("{}건이 블락 해제되었음", updateRows);
 			} else {
-				throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
+				throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.NOT_MATCHED_IDENTIFY);
 			}
 		}
 
@@ -115,7 +118,7 @@ public class MembersServiceImpl implements MembersService {
 			// 비밀번호 일치함
 			int updateRows = this.membersDao.updateLoginStatus(membersVO.getEmail());
 			if (updateRows == 0) {
-				throw new IllegalArgumentException("로그인을 실패했습니다. 잠시 후 다시 시도해주세요.");
+				throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.FAILURE_LOGIN);
 			}
 			MembersVO loggedMember = this.membersDao.selectMemberByEmail(membersVO.getEmail());
 			loggedMember.setName(AES.decode(this.aesSecretKey, loggedMember.getName()));
@@ -129,7 +132,7 @@ public class MembersServiceImpl implements MembersService {
 		int blockUpdateRows = this.membersDao.updateBlock(membersVO.getEmail());
 		if (blockUpdateRows > 0) {
 			// 계정이 차단
-			throw new IllegalArgumentException("계정이 차단되었습니다.");
+			throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.BLOCKED_LOGIN);
 		}
 
 		// 비밀번호가 틀렸으므로 사용자 정보를 반환하지 않음
@@ -159,19 +162,19 @@ public class MembersServiceImpl implements MembersService {
 		
 		MembersVO loggedMember = this.membersDao.selectMemberByEmail(member.getEmail());
 		if (loggedMember == null) {
-			throw new IllegalArgumentException("존재하지 않는 회원입니다.");
+			throw new ArticleException(ExceptionType.MEMBERS, ArticleCodes.NOT_EXISTS);
 		}
 		
 		
 	    String salt = loggedMember.getSalt();
 	    String encryptedPassword = SHA.getEncrypt(password, salt);
 	    if (!loggedMember.getPassword().equals(encryptedPassword)) {
-	        throw new IllegalArgumentException("탈퇴 실패. 비밀번호가 틀렸습니다.");
+	    	throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 일치하지 않습니다.");
 	    }
 
 		int deleteRows = this.membersDao.deleteMember(email);
 		if (deleteRows == 0) {
-			throw new IllegalArgumentException("회원 탈퇴에 실패하였습니다.");
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 일치하지 않습니다.");
 		}
 		// 로그아웃 처리
 		updateLogoutStatus(email);

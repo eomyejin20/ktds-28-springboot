@@ -4,10 +4,15 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.ktdsuniversity.edu.commons.exceptions.ArticleException;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ArticleCodes;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ExceptionType;
 import com.ktdsuniversity.edu.files.components.MultipartHandler;
 import com.ktdsuniversity.edu.members.vo.response.MembersVO;
 import com.ktdsuniversity.edu.replies.dao.RepliesDao;
@@ -52,7 +57,7 @@ public class RepliesServiceImpl implements RepliesService {
 			return this.repliesDao.selectReplyById(articleId, registReplyVO.getId());
 		}
 		
-		throw new IllegalArgumentException("입력값이 유효하지 않습니다.");
+		throw new ArticleException(ExceptionType.REPLIES, ArticleCodes.BAD_REQUEST);
 	}
 
 	@Override
@@ -68,7 +73,8 @@ public class RepliesServiceImpl implements RepliesService {
 		
 		int updatedRows = this.repliesDao.updateReplyById(articleId, replyId, modifyReplyVO);
 		if (updatedRows == 0) {
-			throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+			throw new ArticleException(ExceptionType.REPLIES, ArticleCodes.NOT_EXISTS);
+			
 		}
 		
 		return this.repliesDao.selectReplyById(articleId, replyId);
@@ -85,12 +91,12 @@ public class RepliesServiceImpl implements RepliesService {
 		
 		MembersVO loggedMember = (MembersVO) session.getAttribute("__LOGIN_USER__");
 		if (!loggedMember.getEmail().equals(reply.getEmail())) {
-			throw new IllegalArgumentException("삭제할 수 없는 댓글입니다.");
+			throw new ArticleException(ExceptionType.REPLIES, ArticleCodes.NOT_AUTHORIZED);
 		}
 		
 		int deleteRows = this.repliesDao.deleteReply(articleId, replyId);
 		if (deleteRows == 0) {
-			throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+			throw new ArticleException(ExceptionType.REPLIES, ArticleCodes.NOT_EXISTS);
 		}
 		
 		int deleteCount = this.multipartHandler.deleteFiles(reply.getFileSetId());
@@ -102,7 +108,7 @@ public class RepliesServiceImpl implements RepliesService {
 	public long recommendReply(String articleId, String replyId) {
 		long getRows = this.repliesDao.updateIncreaseRecommendCount(articleId, replyId);
 		if (getRows == 0) {
-			throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+			throw new ArticleException(ExceptionType.REPLIES, ArticleCodes.NOT_EXISTS);
 		}		
 		return getRows;
 	}
@@ -111,7 +117,7 @@ public class RepliesServiceImpl implements RepliesService {
 	public RepliesVO readReply(String articleId, String replyId) {
 		RepliesVO reply = this.repliesDao.selectReplyById(articleId, replyId);
 		if (reply == null) {
-			throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+			throw new ArticleException(ExceptionType.REPLIES, ArticleCodes.NOT_EXISTS);
 		}
 		return reply;
 	}

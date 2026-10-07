@@ -52,52 +52,6 @@ public class ArticlesServiceImpl implements ArticlesService {
 
 	@Override
 	public ArticlesVO createNewArticle(RegistArticleVO registArticleVO) {
-//		if (registArticleVO.getFile() != null) {
-//			
-//			// FILE_SET 생성.
-//			RequestFileSetVO fileSetVO = new RequestFileSetVO();
-//			fileSetVO.setEmail(registArticleVO.getEmail());
-//			
-//			int fileSetInsertCount = this.filesDao.insertNewFileSet(fileSetVO);
-//			if (fileSetInsertCount == 0) {
-//				throw new IllegalArgumentException("파일세트 생성을 할 수 없습니다.");
-//			}
-//			
-//			registArticleVO.setFileSetId( fileSetVO.getId() );
-//			
-//			for (MultipartFile f: registArticleVO.getFile()) {
-//				// 사용자가 업로드한 파일을 서버 컴퓨터에 저장한다.
-//				// 1. 저장할 위치 선정.
-//				// 사용자 홈 디렉토리 찾기.
-//				String homeDirectory = System.getProperty("user.home");
-//
-//				File uploadFolder = new File(homeDirectory, "uploadFiles");
-//				if (!uploadFolder.exists()) {
-//					uploadFolder.mkdirs();
-//				}
-//
-//				// 파일이 저장될 위치와 이름 지정하기
-////				File storeFile = new File(uploadFolder, f.getOriginalFilename());
-//				File storeFile = new File(uploadFolder, UUID.randomUUID().toString() );
-//
-//				// 2. 파일 저장.
-//				try {
-//					f.transferTo(storeFile);
-//					
-//					// FILES 데이터 생성.
-//					RequestFileVO fileVO = new RequestFileVO();
-//					fileVO.setFileSetId(fileSetVO.getId());
-//					fileVO.setDisplayFileName(f.getOriginalFilename());
-//					fileVO.setObfuscateFileName( storeFile.getName() );
-//					fileVO.setFileSize( storeFile.length() );
-//					
-//					this.filesDao.insertNewFile(fileVO);
-//				} catch (IllegalStateException | IOException e) {
-//					throw new IllegalArgumentException(e.getMessage());
-//				}
-//			}
-//		}
-		
 		logger.debug(registArticleVO.toString());
 		
 		String fileSetID = this.multipartHandler.storeFiles(
@@ -116,60 +70,12 @@ public class ArticlesServiceImpl implements ArticlesService {
 			return this.articlesDao.selectArticleByArticleId( registArticleVO.getId() );
 		}
 		
-//		throw new IllegalArgumentException("입력값이 유효하지 않습니다.");
 		throw new ArticleException(ExceptionType.ARTICLES, ArticleCodes.BAD_REQUEST);
 	}
 	
 
 	@Override
 	public ArticlesVO updateArticle(String articleId, ModifyArticleVO modifyArticleVO) {
-		// 업로드된 파일이 있는가?
-//		if (modifyArticleVO.getFile() != null) {
-//			ArticlesVO article = this.articlesDao.selectArticleByArticleId(articleId);
-//			modifyArticleVO.setFileSetId(article.getFileSetId());
-//			
-//			String fileSetId = article.getFileSetId();
-//			// 첨부파일이 없는 게시글
-//			if (fileSetId == null) {
-//				// FILE_SET_ID 생성
-//				RequestFileSetVO fileSetVO = new RequestFileSetVO();
-//				fileSetVO.setEmail(modifyArticleVO.getEmail());
-//				
-//				int fileSetInsertCount = this.filesDao.insertNewFileSet(fileSetVO);
-//				if (fileSetInsertCount == 0) {
-//					throw new IllegalArgumentException("파일세트 생성을 할 수 없습니다.");
-//				}
-//				
-//				modifyArticleVO.setFileSetId(fileSetVO.getId());
-//			}
-//			
-//			for (MultipartFile f: modifyArticleVO.getFile()) {
-//				String homeDirectory = System.getProperty("user.home");
-//
-//				File uploadFolder = new File(homeDirectory, "uploadFiles");
-//				if (!uploadFolder.exists()) {
-//					uploadFolder.mkdirs();
-//				}
-//				
-//				File storeFile = new File(uploadFolder, UUID.randomUUID().toString() );
-//
-//				try {
-//					f.transferTo(storeFile);
-//					
-//					// FILES 데이터 생성.
-//					RequestFileVO fileVO = new RequestFileVO();
-//					fileVO.setFileSetId(modifyArticleVO.getFileSetId());
-//					fileVO.setDisplayFileName(f.getOriginalFilename());
-//					fileVO.setObfuscateFileName( storeFile.getName() );
-//					fileVO.setFileSize( storeFile.length() );
-//					
-//					this.filesDao.insertNewFile(fileVO);
-//				} catch (IllegalStateException | IOException e) {
-//					throw new IllegalArgumentException(e.getMessage());
-//				}
-//			}
-//		}
-//		
 		ArticlesVO article = this.articlesDao.selectArticleByArticleId(articleId);
 		
 		
@@ -183,7 +89,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 		int updatedRows = this.articlesDao.updateArticleId(articleId, modifyArticleVO);
 		
 		if (updatedRows == 0) {
-			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+			throw new ArticleException(ExceptionType.ARTICLES, ArticleCodes.NOT_EXISTS);
 		}
 		
 		return this.articlesDao.selectArticleByArticleId(articleId);
@@ -204,13 +110,13 @@ public class ArticlesServiceImpl implements ArticlesService {
 		
 		MembersVO loggedMember = (MembersVO) session.getAttribute("__LOGIN_USER__");
 		if (!loggedMember.getEmail().equals(article.getEmail())) {
-			throw new IllegalArgumentException("삭제할 수 없는 게시글입니다.");
+			throw new ArticleException(ExceptionType.ARTICLES, ArticleCodes.NOT_AUTHORIZED);
 		}
 		
 		
 		int deleteRows = this.articlesDao.deleteArticle(articleId);
 		if (deleteRows == 0) {
-			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+			throw new ArticleException(ExceptionType.ARTICLES, ArticleCodes.NOT_EXISTS);
 		}
 		
 		int deleteCount = this.multipartHandler.deleteFiles(article.getFileSetId());
@@ -223,7 +129,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 		
 		int getRows = this.articlesDao.updateIncreaseViewCount(articleId);
 		if (getRows == 0) {
-			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+			throw new ArticleException(ExceptionType.ARTICLES, ArticleCodes.NOT_EXISTS);
 		}
 		
 		
@@ -236,7 +142,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 		
 		long getRows = this.articlesDao.updateIncreaseRecommendCount(articleId);
 		if (getRows == 0) {
-			throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+			throw new ArticleException(ExceptionType.ARTICLES, ArticleCodes.NOT_EXISTS);
 		}
 		
 		return getRows;
