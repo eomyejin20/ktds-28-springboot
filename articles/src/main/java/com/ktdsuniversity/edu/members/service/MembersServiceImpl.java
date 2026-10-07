@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,6 +38,7 @@ public class MembersServiceImpl implements MembersService {
 	private final MembersDao membersDao;
 	private static final Logger logger = LoggerFactory.getLogger(FilesServiceImpl.class);
 
+	@Transactional
 	@Override
 	public MembersVO createNewMember(RegistMembersVO registMembersVO) {
 
@@ -140,6 +142,7 @@ public class MembersServiceImpl implements MembersService {
 
 	}
 
+	@Transactional
 	@Override
 	public String updateLogoutStatus(String email) {
 		int updatedRows = this.membersDao.updateLogoutStatus(email);
@@ -150,6 +153,7 @@ public class MembersServiceImpl implements MembersService {
 		return null;
 	}
 
+	@Transactional
 	@Override
 	public String deleteMember(String email, String password) {
 		// 로그인된 회원의 이메일로 회원 정보를 조회

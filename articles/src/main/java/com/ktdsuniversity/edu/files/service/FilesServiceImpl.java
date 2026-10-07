@@ -3,6 +3,7 @@ package com.ktdsuniversity.edu.files.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ktdsuniversity.edu.commons.exceptions.ArticleException;
 import com.ktdsuniversity.edu.commons.exceptions.enums.ArticleCodes;
@@ -20,6 +21,7 @@ public class FilesServiceImpl implements FilesService{
 	private static final Logger logger = LoggerFactory.getLogger(FilesServiceImpl.class);
 	
 
+	@Transactional
 	@Override
 	public FilesVO readAttachFile(String fileSetId, String fileId) {
 		FilesVO filesVO = this.filesDao.selectAttachFile(fileSetId, fileId);

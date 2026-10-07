@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -28,14 +29,10 @@ import lombok.AllArgsConstructor;
 public class ArticlesServiceImpl implements ArticlesService {
 
 	private ArticlesDao articlesDao;
-//	private FilesDao filesDao;
 	private MultipartHandler multipartHandler;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ArticlesServiceImpl.class);
 
-//	public ArticlesServiceImpl(ArticlesDao articlesDao) {
-//		this.articlesDao = articlesDao;
-//	}
 
 	@Override
 	public ArticleListVO readAllArticles() {
@@ -50,6 +47,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 		return list;
 	}
 
+	@Transactional
 	@Override
 	public ArticlesVO createNewArticle(RegistArticleVO registArticleVO) {
 		logger.debug(registArticleVO.toString());
@@ -74,6 +72,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 	}
 	
 
+	@Transactional
 	@Override
 	public ArticlesVO updateArticle(String articleId, ModifyArticleVO modifyArticleVO) {
 		ArticlesVO article = this.articlesDao.selectArticleByArticleId(articleId);
@@ -95,6 +94,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 		return this.articlesDao.selectArticleByArticleId(articleId);
 	}
 
+	@Transactional
 	@Override
 	public String deleteArticle(String articleId) {
 //		int deleteFiles = this.filesDao.deleteFilesByArticleId(articleId);
@@ -124,6 +124,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 		return articleId;
 	}
 
+	@Transactional
 	@Override
 	public ArticlesVO readOneArticle(String articleId) {
 		
@@ -137,6 +138,7 @@ public class ArticlesServiceImpl implements ArticlesService {
 		return this.articlesDao.selectArticleByArticleId(articleId);
 	}
 	
+	@Transactional
 	@Override
 	public long recommendOneArticle(String articleId) {
 		

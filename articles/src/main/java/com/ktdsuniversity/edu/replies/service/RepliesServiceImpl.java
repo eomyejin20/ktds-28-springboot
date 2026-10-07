@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,6 +45,7 @@ public class RepliesServiceImpl implements RepliesService {
 		return list;
 	}
 
+	@Transactional
 	@Override
 	public RepliesVO createNewReply(String articleId, RegistReplyVO registReplyVO) {
 		String fileSetID = this.multipartHandler.storeFiles(
@@ -60,6 +62,7 @@ public class RepliesServiceImpl implements RepliesService {
 		throw new ArticleException(ExceptionType.REPLIES, ArticleCodes.BAD_REQUEST);
 	}
 
+	@Transactional
 	@Override
 	public RepliesVO updateReply(String articleId, String replyId, ModifyReplyVO modifyReplyVO) {
 		RepliesVO reply = this.repliesDao.selectReplyById(articleId, replyId);
@@ -80,6 +83,7 @@ public class RepliesServiceImpl implements RepliesService {
 		return this.repliesDao.selectReplyById(articleId, replyId);
 	}
 
+	@Transactional
 	@Override
 	public String deleteReply(String articleId, String replyId) {
 		ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -104,6 +108,7 @@ public class RepliesServiceImpl implements RepliesService {
 		return articleId + replyId;
 	}
 
+	@Transactional
 	@Override
 	public long recommendReply(String articleId, String replyId) {
 		long getRows = this.repliesDao.updateIncreaseRecommendCount(articleId, replyId);
