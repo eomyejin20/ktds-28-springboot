@@ -107,20 +107,4 @@ public class PaginationVO {
 		System.out.println(pageTest);
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }

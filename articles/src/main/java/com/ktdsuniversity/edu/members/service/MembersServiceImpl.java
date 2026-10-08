@@ -2,6 +2,7 @@ package com.ktdsuniversity.edu.members.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO;
+import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
+import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 import com.ktdsuniversity.edu.commons.crypto.AES;
 import com.ktdsuniversity.edu.commons.crypto.encrypt.hash.SHA;
 import com.ktdsuniversity.edu.commons.exceptions.ArticleException;
@@ -22,6 +26,8 @@ import com.ktdsuniversity.edu.files.service.FilesServiceImpl;
 import com.ktdsuniversity.edu.members.dao.MembersDao;
 import com.ktdsuniversity.edu.members.vo.request.LoginMemberVO;
 import com.ktdsuniversity.edu.members.vo.request.RegistMembersVO;
+import com.ktdsuniversity.edu.members.vo.request.SearchMemberVO;
+import com.ktdsuniversity.edu.members.vo.response.MemberListVO;
 import com.ktdsuniversity.edu.members.vo.response.MembersVO;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -183,6 +189,18 @@ public class MembersServiceImpl implements MembersService {
 		// 로그아웃 처리
 		updateLogoutStatus(email);
 		return email + "의 탈퇴가 완료되었습니다.";
+	}
+
+	@Override
+	public MemberListVO readAllMembers(SearchMemberVO searchMemberVO) {
+		long count = this.membersDao.selectMemberCount(searchMemberVO);
+		searchMemberVO.calculatePageCount(count);
+		List<MembersVO> memberList = this.membersDao.selectAllMembers(searchMemberVO);
+
+		MemberListVO list = new MemberListVO();
+		list.setMemberCount(count);
+		list.setMembersVO(memberList);
+		return list;
 	}
 
 }

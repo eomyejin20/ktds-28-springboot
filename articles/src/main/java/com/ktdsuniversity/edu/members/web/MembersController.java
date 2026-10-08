@@ -16,6 +16,8 @@ import com.ktdsuniversity.edu.commons.util.ApiResponse;
 import com.ktdsuniversity.edu.members.service.MembersService;
 import com.ktdsuniversity.edu.members.vo.request.LoginMemberVO;
 import com.ktdsuniversity.edu.members.vo.request.RegistMembersVO;
+import com.ktdsuniversity.edu.members.vo.request.SearchMemberVO;
+import com.ktdsuniversity.edu.members.vo.response.MemberListVO;
 import com.ktdsuniversity.edu.members.vo.response.MembersVO;
 
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +30,13 @@ public class MembersController {
 
 	private MembersService membersService;
 	private static final Logger logger = LoggerFactory.getLogger(MembersController.class);
+	
+	@GetMapping("/members/list")
+	public ApiResponse<MemberListVO> getAllMembers(SearchMemberVO searchMemberVO) {
+		MemberListVO result = this.membersService.readAllMembers(searchMemberVO);
+		return ApiResponse.OK(result);
+		
+	}
 	
 	@PostMapping("/members/signup")
 	public ApiResponse<MembersVO> createNewMember(

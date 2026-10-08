@@ -3,12 +3,31 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ktdsuniversity.edu.members.dao.MembersDao">
-	<!-- <select id="selectMembersCount" resultType="_long">
-		SELECT COUNT(EMAIL)
+	<select id="selectMemberCount" 
+	         parameterType="com.ktdsuniversity.edu.members.vo.request.SearchMemberVO"
+	         resultType="_long">
+		SELECT COUNT(DISTINCT EMAIL)
 		  FROM MEMBERS
+		 WHERE DEL_YN = 'N'
+            <if test='name != null and name != ""'>
+            AND NAME = AES_ENCRYPTION(#{name})
+            </if>
+            <if test='nickname != null and nickname != ""'>
+            AND NICKNAME = AES_ENCRYPTION(#{nickname})
+            </if>
+            <if test='email != null and email != ""'>
+            AND EMAIL LIKE '%' || #{email} || '%'
+            </if>
+            <if test='registDate != null and registDate != ""'>
+            AND REGIST_DATE >= TO_DATE(#{registDate}, 'YYYY-MM-DD')
+            AND REGIST_DATE <![CDATA[<]]> TO_DATE(#{registDate}, 'YYYY-MM-DD') + 1
+            </if>
 	</select>
-	<select id="selectALLMembers"
-		resultType="com.ktdsuniversity.edu.members.vo.response.MembersVO">
+	
+	<select id="selectAllMembers"
+	         parameterType="com.ktdsuniversity.edu.members.vo.request.SearchMemberVO"
+		     resultType="com.ktdsuniversity.edu.members.vo.response.MembersVO">
+		     <include refid="Commons.rank_paginate_header_by_email"></include>
 		SELECT EMAIL
 			 , NAME
 			 , NICKNAME
@@ -25,7 +44,23 @@
 			 , SALT
 			 , DEL_YN
 		  FROM MEMBERS
-	</select> -->
+		 WHERE DEL_YN = 'N'
+		    <if test='name != null and name != ""'>
+            AND NAME = AES_ENCRYPTION(#{name})
+            </if>
+            <if test='nickname != null and nickname != ""'>
+            AND NICKNAME = AES_ENCRYPTION(#{nickname})
+            </if>
+            <if test='email != null and email != ""'>
+            AND EMAIL LIKE '%' || #{email} || '%'
+            </if>
+            <if test='registDate != null and registDate != ""'>
+            AND REGIST_DATE >= TO_DATE(#{registDate}, 'YYYY-MM-DD')
+            AND REGIST_DATE <![CDATA[<]]> TO_DATE(#{registDate}, 'YYYY-MM-DD') + 1
+            </if>
+		  <include refid="Commons.rank_paginate_footer"></include>
+	</select>
+	
 	<select id="selectEmailCount" 
             parameterType="string"
             resultType="_int">

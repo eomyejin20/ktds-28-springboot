@@ -17,11 +17,29 @@
            AND M.DEL_YN = 'N'
            AND A.DEL_YN = 'N'
           LEFT OUTER JOIN (SELECT FS.ID
+                                , F.DISPLAY_FILE_NAME
                              FROM FILE_SET FS
                             INNER JOIN FILES F
                                ON FS.ID = F.FILE_SET_ID
                             WHERE F.DEL_YN = 'N') F
             ON A.FILE_SET_ID = F.ID
+           <where>
+            <if test='subject != null and subject != ""'>
+            AND A.SUBJECT LIKE '%' || #{subject} || '%'
+            </if>
+            <if test='content != null and content != ""'>
+            AND A.CONTENT LIKE '%' || #{content} || '%'
+            </if>
+            <if test='filename != null and filename != ""'>
+            AND F.DISPLAY_FILE_NAME LIKE '%' || #{filename} || '%'
+            </if>
+            <if test='name != null and name != ""'>
+            AND M.NAME = AES_ENCRYPTION(#{name})
+            </if>
+            <if test='nickname != null and nickname != ""'>
+            AND M.NICKNAME = AES_ENCRYPTION(#{nickname})
+            </if>
+           </where>
 	</select>
 
 <!-- Join된 쿼리의 결과를 받아올 때 -->
@@ -49,10 +67,8 @@
     <select id="selectAllArticles"
              parameterType="com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO"
              resultMap="AllArticlesVOMap">
-             SELECT *
-               FROM (SELECT T.*
-                  , ROWNUM AS RNUM
-               FROM (SELECT A.ID
+             <include refid="Commons.rank_paginate_header"></include>
+              SELECT A.ID
                    , A.SUBJECT
                    , A.CONTENT
                    , A.EMAIL
@@ -93,11 +109,23 @@
                                   WHERE F.DEL_YN = 'N') F
                   ON A.FILE_SET_ID = F.ID
                WHERE A.DEL_YN = 'N'
-               ) T
-                      WHERE ROWNUM <![CDATA[<=]]> (#{pageNo} + 1) * #{listSize})
-              WHERE RNUM >= #{pageNo} * #{listSize} + 1
+	            <if test='subject != null and subject != ""'>
+	            AND A.SUBJECT LIKE '%' || #{subject} || '%'
+	            </if>
+	            <if test='content != null and content != ""'>
+	            AND A.CONTENT LIKE '%' || #{content} || '%'
+	            </if>
+	            <if test='filename != null and filename != ""'>
+	            AND F.DISPLAY_FILE_NAME LIKE '%' || #{filename} || '%'
+	            </if>
+	            <if test='name != null and name != ""'>
+	            AND M.NAME = AES_ENCRYPTION(#{name})
+	            </if>
+	            <if test='nickname != null and nickname != ""'>
+	            AND M.NICKNAME = AES_ENCRYPTION(#{nickname})
+	            </if>
+               <include refid="Commons.rank_paginate_footer"></include>
     </select>
-    
 
 	<insert id="insertNewArticle"
 		parameterType="com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO">
